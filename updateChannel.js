@@ -1,4 +1,4 @@
-import * as Gamedig from "gamedig";
+import { query as gamedigQuery } from "gamedig";
 import { Client, GatewayIntentBits } from "discord.js";
 
 const {
@@ -14,7 +14,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 async function fetchPlayerCount() {
   try {
-    const state = await Gamedig.query({
+    const state = await gamedigQuery({
       type: "csgo",
       host: SERVER_IP,
       port: parseInt(SERVER_PORT, 10),
