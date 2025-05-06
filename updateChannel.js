@@ -1,4 +1,5 @@
-import { query as gamedigQuery } from "gamedig";
+// updateChannel.js
+import { GameDig } from "gamedig";
 import { Client, GatewayIntentBits } from "discord.js";
 
 const {
@@ -14,7 +15,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 async function fetchPlayerCount() {
   try {
-    const state = await gamedigQuery({
+    const state = await GameDig.query({
       type: "csgo",
       host: SERVER_IP,
       port: parseInt(SERVER_PORT, 10),
@@ -36,8 +37,6 @@ async function updateChannelName() {
     if (channel.name !== newName) {
       await channel.setName(newName);
       console.log(`Renamed channel to "${newName}"`);
-    } else {
-      console.log("No change needed");
     }
   } catch (err) {
     console.error("Error updating channel:", err);
