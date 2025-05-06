@@ -1,6 +1,7 @@
 {
   "name": "updatechannelname",
   "version": "1.0.0",
+  "type": "module",
   "main": "updateChannel.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
