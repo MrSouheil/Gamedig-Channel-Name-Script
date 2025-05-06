@@ -1,5 +1,5 @@
 import * as Gamedig from "gamedig";
-import { Client, Intents } from "discord.js";
+import { Client, GatewayIntentBits } from "discord.js";
 
 const {
   SERVER_IP,
@@ -10,7 +10,7 @@ const {
   INTERVAL_MINUTES = "5",
 } = process.env;
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 async function fetchPlayerCount() {
   try {
