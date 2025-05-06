@@ -6,7 +6,7 @@ concurrency:
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *" # every 5 minutes
+    - cron: "*/2 * * * *" # every 2 minutes
 jobs:
   update-channel:
     runs-on: ubuntu-latest
@@ -20,4 +20,4 @@ jobs:
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           GUILD_ID: ${{ secrets.GUILD_ID }}
-          INTERVAL_MINUTES: 5
+          INTERVAL_MINUTES: 1
