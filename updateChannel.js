@@ -40,7 +40,7 @@ async function updateChannels() {
       const state = await fetchState(server);
       const count = state ? state.players.length : "?";
       const channel = await guild.channels.fetch(server.channelId);
-      const newName = `${server.name} [${count}]`;
+      const newName = `${server.name} [${count} Player(s)]`;
       if (channel.name !== newName) {
         await channel.setName(newName);
         console.log(`Renamed ${server.name} to "${newName}"`);
