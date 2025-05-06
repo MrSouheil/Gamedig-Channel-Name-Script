@@ -1,7 +1,7 @@
 import { GameDig } from "gamedig";
 import { Client, GatewayIntentBits } from "discord.js";
 
-const { DISCORD_TOKEN, GUILD_ID, INTERVAL_MINUTES = "5" } = process.env;
+const { DISCORD_TOKEN, GUILD_ID, INTERVAL_MINUTES = "1" } = process.env;
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 const servers = [
@@ -38,9 +38,10 @@ async function updateChannels() {
   await Promise.all(
     servers.map(async (server) => {
       const state = await fetchState(server);
-      const count = state ? state.players.length : "?";
+      const players = state ? state.players.length : "?";
+      const max = state ? state.maxplayers : "?";
+      const newName = `${server.name}: ${players}/${max}`;
       const channel = await guild.channels.fetch(server.channelId);
-      const newName = `${server.name} [${count} Player(s)]`;
       if (channel.name !== newName) {
         await channel.setName(newName);
         console.log(`Renamed ${server.name} to "${newName}"`);
