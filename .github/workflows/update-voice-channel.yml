@@ -1,0 +1,21 @@
+name: Update CS Server Voice Channel
+on:
+  schedule:
+    - cron: "*/5 * * * *" # every 5 minutes
+jobs:
+  update-channel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - run: npm ci
+      - run: node updateChannel.js
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          GUILD_ID: ${{ secrets.GUILD_ID }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          INTERVAL_MINUTES: 5
