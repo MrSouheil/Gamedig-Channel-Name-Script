@@ -2,8 +2,6 @@ import { GameDig } from "gamedig";
 import { Client, GatewayIntentBits } from "discord.js";
 
 const {
-  SERVER_IP,
-  SERVER_PORT,
   DISCORD_TOKEN,
   GUILD_ID,
   CHANNEL_ID,
@@ -12,30 +10,39 @@ const {
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-async function fetchServerState() {
+const servers = [
+  { name: "AUTOMIX #1", host: "193.31.28.17", port: 27015 },
+  { name: "AUTOMIX #2", host: "193.31.28.17", port: 27035 },
+  { name: "DEATHMATCH", host: "193.31.28.17", port: 27025 },
+];
+
+async function fetchState(server) {
   try {
     return await GameDig.query({
       type: "csgo",
-      host: SERVER_IP,
-      port: parseInt(SERVER_PORT, 10),
+      host: server.host,
+      port: server.port,
     });
   } catch (err) {
-    console.error("Error querying server:", err);
-    throw err;
+    console.error(`Error querying ${server.name}:`, err);
+    return null;
   }
 }
 
 async function updateChannelName() {
   try {
-    const state = await fetchServerState();
-    const serverName = state.name;
-    const activePlayers = state.players.length;
-    const totalPlayers = state.maxplayers;
-
+    const results = await Promise.all(servers.map(fetchState));
+    const nameParts = results.map((state, i) =>
+      state
+        ? `${servers[i].name} ${state.players.length}`
+        : `${servers[i].name} ?`
+    );
+    const newName =
+      nameParts.length > 1
+        ? `${nameParts.slice(0, -1).join(", ")} and ${nameParts.slice(-1)}`
+        : nameParts[0];
     const guild = await client.guilds.fetch(GUILD_ID);
     const channel = await guild.channels.fetch(CHANNEL_ID);
-    const newName = `${serverName}: ${activePlayers} / ${totalPlayers}`;
-
     if (channel.name !== newName) {
       await channel.setName(newName);
       console.log(`Renamed channel to "${newName}"`);
