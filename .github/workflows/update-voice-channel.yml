@@ -1,4 +1,8 @@
 name: Update CS Server Voice Channel
+concurrency:
+  group: update-cs-server-voice
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
   schedule:
@@ -14,8 +18,6 @@ jobs:
       - run: npm ci
       - run: node updateChannel.js
         env:
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-          SERVER_PORT: ${{ secrets.SERVER_PORT }}
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           GUILD_ID: ${{ secrets.GUILD_ID }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
