@@ -38,8 +38,17 @@ async function updateChannels() {
   await Promise.all(
     servers.map(async (server) => {
       const state = await fetchState(server);
-      const players = state ? state.players.length : "?";
-      const max = state ? state.maxplayers : "?";
+      let players = "?";
+      let max = "?";
+
+      if (state) {
+        const isSourceTVPresent = state.players.some(
+          (p) => p.name.toLowerCase() === "sourcetv"
+        );
+        players = state.players.length - (isSourceTVPresent ? 1 : 0);
+        max = state.maxplayers;
+      }
+
       const newName = `${server.name}: ${players}/${max}`;
       const channel = await guild.channels.fetch(server.channelId);
       if (channel.name !== newName) {
