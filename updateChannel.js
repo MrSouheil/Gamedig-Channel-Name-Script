@@ -1,7 +1,7 @@
 import { GameDig } from "gamedig";
 import { Client, GatewayIntentBits } from "discord.js";
 
-const { DISCORD_TOKEN, GUILD_ID, INTERVAL_MINUTES = "1" } = process.env;
+const { DISCORD_TOKEN, GUILD_ID, INTERVAL_MINUTES = "5" } = process.env;
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 const servers = [
