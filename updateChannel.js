@@ -43,7 +43,7 @@ async function updateChannels() {
 
       if (state) {
         const isSourceTVPresent = state.players.some(
-          (p) => p.name.toLowerCase() === "automix.me tv"
+          (p) => p.name.toLowerCase() === "maxfps tv"
         );
         players = state.players.length - (isSourceTVPresent ? 1 : 0);
         max = state.maxplayers;
