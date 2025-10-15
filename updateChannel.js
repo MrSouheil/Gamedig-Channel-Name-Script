@@ -21,7 +21,7 @@ const servers = [
     name: "AUTOMIX #3",
     host: "193.31.28.17",
     port: 27045,
-    channelId: "1369430033525112954",
+    channelId: "1427802825823359026",
   },
   {
     name: "DEATHMATCH",
