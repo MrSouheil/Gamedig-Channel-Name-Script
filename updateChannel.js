@@ -53,6 +53,15 @@ async function updateChannels() {
         );
         players = state.players.length - (isSourceTVPresent ? 1 : 0);
         max = state.maxplayers;
+
+        if (players === 0 || max === 0) {
+          console.log(
+            `[WARN] Possible anomaly for ${server.name}: players=${players}, max=${max}, state=`,
+            JSON.stringify(state, null, 2)
+          );
+        }
+      } else {
+        console.log(`[WARN] No state received for ${server.name}`);
       }
 
       const newName = `${server.name}: ${players}/${max}`;
