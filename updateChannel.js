@@ -1,18 +1,27 @@
 import { GameDig } from "gamedig";
-import { Client, GatewayIntentBits } from "discord.js";
+import {
+  Client,
+  GatewayIntentBits,
+  AttachmentBuilder,
+  EmbedBuilder,
+} from "discord.js";
 import fs from "fs";
 import { exec } from "child_process";
+import { renderLeaderboardImage } from "./leaderboardImage.js";
 
-const { DISCORD_TOKEN, GUILD_ID, INTERVAL_MINUTES = "5" } = process.env;
+const {
+  DISCORD_TOKEN,
+  GUILD_ID,
+  INTERVAL_MINUTES = "5",
+  LEADERBOARD_INTERVAL_MINUTES = "30",
+  RUN_ONCE = "false",
+} = process.env;
+
+const runOnce = RUN_ONCE === "true";
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// Leaderboard configuration
 const LEADERBOARD_URL = "https://automix.me/files/leaderboard.json";
-const LEADERBOARD_CHANNEL_ID = "1430989874269519993"; // Manually inserted
-const LEADERBOARD_INTERVAL_MINUTES = parseInt(
-  process.env.LEADERBOARD_INTERVAL_MINUTES ?? "30",
-  10
-);
+const LEADERBOARD_CHANNEL_ID = "1430989874269519993";
 
 const servers = [
   {
@@ -44,7 +53,8 @@ const servers = [
 async function fetchState({ host, port }) {
   try {
     return await GameDig.query({ type: "csgo", host, port });
-  } catch {
+  } catch (err) {
+    console.error(`[WARN] fetchState failed ${host}:${port}`, err);
     return null;
   }
 }
@@ -59,24 +69,17 @@ async function updateChannels() {
 
       if (state) {
         const isSourceTVPresent = state.players.some(
-          (p) => p.name.toLowerCase() === "maxfps tv"
+          (p) => (p.name || "").toLowerCase() === "maxfps tv"
         );
         players = state.players.length - (isSourceTVPresent ? 1 : 0);
         max = state.maxplayers;
-
-        if (players === 0 || max === 0) {
-          console.log(
-            `[WARN] Possible anomaly for ${server.name}: players=${players}, max=${max}, state=`,
-            JSON.stringify(state, null, 2)
-          );
-        }
       } else {
         console.log(`[WARN] No state received for ${server.name}`);
       }
 
       const newName = `${server.name}: ${players}/${max}`;
       const channel = await guild.channels.fetch(server.channelId);
-      if (channel.name !== newName) {
+      if (channel && channel.name !== newName) {
         await channel.setName(newName);
         console.log(`Renamed ${server.name} to "${newName}"`);
       }
@@ -94,49 +97,6 @@ async function fetchLeaderboard() {
     console.log(`[WARN] Failed to fetch leaderboard: ${err.message}`);
     return null;
   }
-}
-
-function pad(str, width, align = "right") {
-  str = String(str ?? "");
-  if (str.length >= width) return str.slice(0, width);
-  const padLen = width - str.length;
-  return align === "right"
-    ? " ".repeat(padLen) + str
-    : str + " ".repeat(padLen);
-}
-
-function formatLeaderboard(rank = [], lastUpdate) {
-  // columns: #, name, pts, k, d, kdr
-  const header = `${pad("#", 3, "right")} ${pad("Name", 16, "left")} ${pad(
-    "Pts",
-    7,
-    "right"
-  )} ${pad("K", 5, "right")} ${pad("D", 5, "right")} ${pad(
-    "KDR",
-    6,
-    "right"
-  )} `;
-  const lines = [header, "-".repeat(header.length)];
-  const top = rank.slice(0, 15);
-  top.forEach((p, i) => {
-    const line = `${pad(i + 1, 3)} ${pad(p.name, 16, "left")} ${pad(
-      p.points,
-      7
-    )} ${pad(p.kills, 5)} ${pad(p.deaths, 5)} ${pad(p.kdr, 6)}`;
-    lines.push(line);
-  });
-
-  const last = lastUpdate
-    ? `Last update: ${lastUpdate}`
-    : "Last update: unknown";
-  return (
-    `Automix Leaderboard\n\n` +
-    "```" +
-    "\n" +
-    lines.join("\n") +
-    "\n```" +
-    `\n${last}`
-  );
 }
 
 const MSG_ID_FILE = "leaderboard_message_id.json";
@@ -162,7 +122,6 @@ function saveMessageIdToFile(id) {
 }
 
 async function commitMessageIdIfPossible() {
-  // Only attempt when running inside GitHub Actions and a token is provided
   const GITHUB_ACTIONS = process.env.GITHUB_ACTIONS;
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
   const GITHUB_REPOSITORY = process.env.GITHUB_REPOSITORY;
@@ -180,22 +139,26 @@ async function commitMessageIdIfPossible() {
   ].join(" && ");
 
   return new Promise((resolve) => {
-    exec(
-      cmds,
-      { cwd: process.cwd(), env: process.env },
-      (err, stdout, stderr) => {
-        if (err) {
-          console.log(`[WARN] Could not commit message id: ${err.message}`);
-          return resolve(false);
-        }
-        console.log("Persisted leaderboard message id to repository");
-        return resolve(true);
+    exec(cmds, { cwd: process.cwd(), env: process.env }, (err) => {
+      if (err) {
+        console.log(`[WARN] Could not commit message id: ${err.message}`);
+        return resolve(false);
       }
-    );
+      console.log("Persisted leaderboard message id to repository");
+      return resolve(true);
+    });
   });
 }
 
-let leaderboardMessageId = loadMessageIdFromFile(); // will be null if not present
+let leaderboardMessageId = loadMessageIdFromFile();
+
+function buildEmbed({ last_update }) {
+  return new EmbedBuilder()
+    .setColor(0x00ffcc)
+    .setTitle("🏆 Automix Leaderboard")
+    .setDescription("Top players (image)")
+    .setFooter({ text: `Last update: ${last_update || "unknown"}` });
+}
 
 async function updateLeaderboardMessage() {
   const guild = await client.guilds.fetch(GUILD_ID).catch(() => null);
@@ -215,56 +178,71 @@ async function updateLeaderboardMessage() {
   const data = await fetchLeaderboard();
   if (!data) return;
 
-  const content = formatLeaderboard(data.rank, data.last_update);
-
   try {
+    const png = renderLeaderboardImage({
+      title: "AUTOMIX Leaderboard",
+      rows: (data.rank || []).slice(0, 15),
+      lastUpdate: data.last_update,
+    });
+
+    const fileName = "leaderboard.png";
+    const attachment = new AttachmentBuilder(png, { name: fileName });
+    const embed = buildEmbed({ last_update: data.last_update }).setImage(
+      `attachment://${fileName}`
+    );
+
     let message = null;
 
-    // Try to find previously-known message id
     if (leaderboardMessageId) {
       message = await channel.messages
         .fetch(leaderboardMessageId)
         .catch(() => null);
     }
 
-    // Fallback: search recent bot messages that look like our leaderboard
     if (!message) {
       const recent = await channel.messages.fetch({ limit: 100 });
       message = recent.find(
         (m) =>
           m.author?.id === client.user.id &&
-          m.content &&
-          m.content.startsWith("Automix Leaderboard")
+          m.embeds?.[0]?.title?.includes("Automix Leaderboard")
       );
     }
 
     if (message) {
-      await message.edit({ content });
+      await message.edit({ embeds: [embed], files: [attachment] });
       leaderboardMessageId = message.id;
       saveMessageIdToFile(leaderboardMessageId);
       await commitMessageIdIfPossible();
-      console.log("Updated leaderboard message");
+      console.log("Updated leaderboard image message");
     } else {
-      const sent = await channel.send({ content });
+      const sent = await channel.send({ embeds: [embed], files: [attachment] });
       leaderboardMessageId = sent.id;
       saveMessageIdToFile(leaderboardMessageId);
       await commitMessageIdIfPossible();
-      console.log("Sent new leaderboard message");
+      console.log("Sent new leaderboard image message");
     }
   } catch (err) {
     console.log(
-      `[ERROR] Could not send/edit leaderboard message: ${err.message}`
+      `[ERROR] Could not send/edit leaderboard image message: ${err.message}`
     );
   }
 }
 
-client.once("ready", () => {
-  updateChannels();
-  setInterval(updateChannels, parseInt(INTERVAL_MINUTES, 10) * 60000);
-
-  // Start leaderboard updater immediately and schedule it
-  updateLeaderboardMessage();
-  setInterval(updateLeaderboardMessage, LEADERBOARD_INTERVAL_MINUTES * 60000);
+client.once("ready", async () => {
+  try {
+    await updateChannels();
+    await updateLeaderboardMessage();
+  } finally {
+    if (runOnce) {
+      setTimeout(() => process.exit(0), 1500);
+      return;
+    }
+    setInterval(updateChannels, parseInt(INTERVAL_MINUTES, 10) * 60000);
+    setInterval(
+      updateLeaderboardMessage,
+      parseInt(LEADERBOARD_INTERVAL_MINUTES, 10) * 60000
+    );
+  }
 });
 
 client.login(DISCORD_TOKEN);
