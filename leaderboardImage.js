@@ -93,13 +93,15 @@ export function renderLeaderboardImage({
   const headers = ["#", "Name", "Points", "Kills", "Deaths", "KDR"];
   ctx.fillStyle = PALETTE.muted;
   ctx.font = `700 22px "DejaVu Sans"`;
+  // Use textAlign for precise alignment (right-aligned numeric columns)
   headers.forEach((h) => {
     const x = cols[h];
     const alignRight = ["#", "Points", "Kills", "Deaths", "KDR"].includes(h);
-    const w = ctx.measureText(h).width;
-    const tx = alignRight ? x - w : x;
-    ctx.fillText(h, tx, hy1 + 38);
+    ctx.textAlign = alignRight ? "right" : "left";
+    ctx.fillText(h, x, hy1 + 38);
   });
+  // restore default
+  ctx.textAlign = "left";
 
   // Grid
   const startY = hy2 + 6;
@@ -133,8 +135,9 @@ export function renderLeaderboardImage({
     const rankTxt = String(rank);
     ctx.fillStyle = rankColor;
     ctx.font = `700 22px "DejaVu Sans"`;
-    const rankW = ctx.measureText(rankTxt).width;
-    ctx.fillText(rankTxt, cols["#"] - rankW, y + 22);
+    ctx.textAlign = "right";
+    ctx.fillText(rankTxt, cols["#"], y + 22);
+    ctx.textAlign = "left";
 
     // Name (truncate/fit if needed)
     const maxNamePx = cols.Points - cols.Name - 40;
@@ -158,11 +161,12 @@ export function renderLeaderboardImage({
       ["Deaths", r.deaths],
       ["KDR", Number.isFinite(r.kdr) ? r.kdr.toFixed(2) : "—"],
     ];
+    ctx.textAlign = "right";
     cells.forEach(([key, val]) => {
       const str = String(val);
-      const w = ctx.measureText(str).width;
-      ctx.fillText(str, cols[key] - w, y + 22);
+      ctx.fillText(str, cols[key], y + 22);
     });
+    ctx.textAlign = "left";
   });
 
   return canvas.toBuffer("image/png");
