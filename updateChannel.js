@@ -135,7 +135,11 @@ async function commitMessageIdIfPossible() {
     `git remote set-url origin ${repoUrl}`,
     `git add ${MSG_ID_FILE}`,
     `git commit -m "chore: persist leaderboard message id" || true`,
-    `git push origin HEAD:refs/heads/$(git rev-parse --abbrev-ref HEAD)`,
+    // fetch remote and rebase to avoid non-fast-forward errors
+    `git fetch origin`,
+    `git rebase origin/$(git rev-parse --abbrev-ref HEAD) || true`,
+    // push; if rebase didn't work, attempt force push as a last resort
+    `git push origin HEAD:refs/heads/$(git rev-parse --abbrev-ref HEAD) || git push --force origin HEAD:refs/heads/$(git rev-parse --abbrev-ref HEAD)`,
   ].join(" && ");
 
   return new Promise((resolve) => {
