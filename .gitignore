@@ -11,9 +11,6 @@ yarn-error.log*
 .env.local
 .env.*.local
 
-# Optional npm cache directory
-.npm
-
 # OS files
 .DS_Store
 Thumbs.db
@@ -25,6 +22,3 @@ build/
 # Editor directories and files
 .vscode/
 .idea/
-
-# Persisted leaderboard message id (if you prefer to ignore)
-leaderboard_message_id.json
