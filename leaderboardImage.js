@@ -81,10 +81,10 @@ export function renderLeaderboardImage({
   const cols = {
     // Right-anchored numeric columns for stable layout
     // moved anchors slightly left to add more spacing between numeric columns
-    KDR: width - pad - 40,
-    Deaths: width - pad - 140,
-    Kills: width - pad - 240,
-    Points: width - pad - 340,
+    KDR: width - pad - 80,
+    Deaths: width - pad - 180,
+    Kills: width - pad - 280,
+    Points: width - pad - 380,
     Name: pad + 120,
     "#": pad + 40,
   };
