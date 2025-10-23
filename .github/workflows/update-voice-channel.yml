@@ -1,4 +1,4 @@
-name: Update CS Server Voice Channel
+name: Update CS Server Voice Channel & Discord Leaderboard
 concurrency:
   group: update-cs-server-voice
   cancel-in-progress: false
@@ -12,19 +12,30 @@ permissions:
   contents: write # allow committing files via GITHUB_TOKEN
 
 jobs:
-  update-channel:
+  update:
     runs-on: ubuntu-latest
-    env:
-      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-      GUILD_ID: ${{ secrets.GUILD_ID }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # expose token to node script
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          persist-credentials: true
-          fetch-depth: 0
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-      - run: npm ci
-      - run: node updateChannel.js
+          node-version: 20
+          cache: npm
+      - name: Install system deps for node-canvas
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential libcairo2-dev libpango1.0-dev libjpeg-turbo8-dev \
+            libgif-dev librsvg2-dev fonts-dejavu-core
+      - name: Install deps
+        run: npm ci --omit=dev
+      - name: Run updater (single pass)
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          GUILD_ID: ${{ secrets.GUILD_ID }}
+          LEADERBOARD_INTERVAL_MINUTES: "60"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RUN_ONCE: "true"
+        run: node updateChannel.js
