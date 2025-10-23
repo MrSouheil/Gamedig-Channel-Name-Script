@@ -6,7 +6,7 @@ concurrency:
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *" # every 5 minutes
+    - cron: "0 */6 * * *" # every 6 hours (workflow will keep running until forced shutdown)
 
 permissions:
   contents: write # allow committing files via GITHUB_TOKEN
@@ -30,12 +30,13 @@ jobs:
             libgif-dev librsvg2-dev fonts-dejavu-core
       - name: Install deps
         run: npm ci --omit=dev
-      - name: Run updater (single pass)
+      - name: Run updater (keep running until forced shutdown)
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           GUILD_ID: ${{ secrets.GUILD_ID }}
+          INTERVAL_MINUTES: "5"
           LEADERBOARD_INTERVAL_MINUTES: "60"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          RUN_ONCE: "true"
+          RUN_ONCE: "false"
         run: node updateChannel.js
