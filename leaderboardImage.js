@@ -79,12 +79,13 @@ export function renderLeaderboardImage({
 
   // Columns (pixel anchors)
   const cols = {
-    "#": 100,
-    Name: 400,
-    Pts: 650,
-    K: 770,
-    D: 880,
-    KDR: 990,
+    // Right-anchored numeric columns for stable layout
+    KDR: width - pad - 30,
+    D: width - pad - 120,
+    K: width - pad - 210,
+    Pts: width - pad - 300,
+    Name: pad + 120,
+    "#": pad + 40,
   };
 
   // Header text
@@ -130,19 +131,24 @@ export function renderLeaderboardImage({
     // Rank number (right-aligned)
     const rankTxt = String(rank);
     ctx.fillStyle = rankColor;
+    ctx.font = `700 22px "DejaVu Sans"`;
     const rankW = ctx.measureText(rankTxt).width;
     ctx.fillText(rankTxt, cols["#"] - rankW, y + 22);
 
-    // Name (truncate if needed)
+    // Name (truncate/fit if needed)
     const maxNamePx = cols.Pts - cols.Name - 20;
     ctx.fillStyle = PALETTE.text;
-    const { text: nameFitted } = fitText(
+    const { size: nameSize, text: nameFitted } = fitText(
       ctx,
       String(r.name ?? ""),
       maxNamePx,
       22
     );
+    ctx.font = `400 ${nameSize}px "DejaVu Sans"`;
     ctx.fillText(nameFitted, cols.Name, y + 22);
+
+    // restore body font for numbers
+    ctx.font = `400 22px "DejaVu Sans"`;
 
     // Numeric columns (right-aligned)
     const cells = [
@@ -164,8 +170,12 @@ export function renderLeaderboardImage({
   const footerText = `Last update: ${
     lastUpdate || "unknown"
   } • Data source: automix.me`;
+  ctx.fillStyle = PALETTE.muted;
+  ctx.font = `400 16px "DejaVu Sans"`;
   const fw = ctx.measureText(footerText).width;
-  ctx.fillText(footerText, width - pad - 12 - fw, height - pad - 12);
+  const footerX = width - pad - 12 - fw;
+  const footerY = height - pad - 14;
+  ctx.fillText(footerText, footerX, footerY);
 
   return canvas.toBuffer("image/png");
 }

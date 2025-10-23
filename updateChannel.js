@@ -205,15 +205,23 @@ async function updateLeaderboardMessage() {
 
     if (!message) {
       const recent = await channel.messages.fetch({ limit: 100 });
-      message = recent.find(
-        (m) =>
-          m.author?.id === client.user.id &&
-          m.embeds?.[0]?.title?.includes("Automix Leaderboard")
-      );
+      // Find either an existing embed image message or a legacy text leaderboard
+      message = recent.find((m) => {
+        if (m.author?.id !== client.user.id) return false;
+        if (m.embeds?.[0]?.title?.includes("Automix Leaderboard")) return true;
+        if (m.content && m.content.startsWith("Automix Leaderboard"))
+          return true;
+        return false;
+      });
     }
 
     if (message) {
-      await message.edit({ embeds: [embed], files: [attachment] });
+      // If the message was a legacy text message, replace it with the embed+image
+      await message.edit({
+        content: null,
+        embeds: [embed],
+        files: [attachment],
+      });
       leaderboardMessageId = message.id;
       saveMessageIdToFile(leaderboardMessageId);
       await commitMessageIdIfPossible();
