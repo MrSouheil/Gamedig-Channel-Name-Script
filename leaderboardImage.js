@@ -93,14 +93,28 @@ export function renderLeaderboardImage({
   const headers = ["#", "Name", "Points", "Kills", "Deaths", "KDR"];
   ctx.fillStyle = PALETTE.muted;
   ctx.font = `700 22px "DejaVu Sans"`;
-  // Use textAlign for precise alignment (right-aligned numeric columns)
+
+  // Center numeric headers over their column while keeping numbers right-aligned.
+  const numericOrder = ["Points", "Kills", "Deaths", "KDR"];
+  const centers = {};
+  let prevX = cols.Name + 8;
+  for (const key of numericOrder) {
+    centers[key] = prevX + (cols[key] - prevX) / 2;
+    prevX = cols[key];
+  }
+
   headers.forEach((h) => {
-    const x = cols[h];
-    const alignRight = ["#", "Points", "Kills", "Deaths", "KDR"].includes(h);
-    ctx.textAlign = alignRight ? "right" : "left";
-    ctx.fillText(h, x, hy1 + 38);
+    if (h === "#") {
+      ctx.textAlign = "right";
+      ctx.fillText(h, cols["#"], hy1 + 38);
+    } else if (h === "Name") {
+      ctx.textAlign = "left";
+      ctx.fillText(h, cols.Name, hy1 + 38);
+    } else {
+      ctx.textAlign = "center";
+      ctx.fillText(h, centers[h], hy1 + 38);
+    }
   });
-  // restore default
   ctx.textAlign = "left";
 
   // Grid
