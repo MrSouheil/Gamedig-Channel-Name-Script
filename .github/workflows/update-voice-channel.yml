@@ -7,17 +7,24 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "*/5 * * * *" # every 5 minutes
+
+permissions:
+  contents: write # allow committing files via GITHUB_TOKEN
+
 jobs:
   update-channel:
     runs-on: ubuntu-latest
+    env:
+      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      GUILD_ID: ${{ secrets.GUILD_ID }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # expose token to node script
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+          fetch-depth: 0
       - uses: actions/setup-node@v3
         with:
           node-version: "18"
       - run: npm ci
       - run: node updateChannel.js
-        env:
-          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-          GUILD_ID: ${{ secrets.GUILD_ID }}
-          INTERVAL_MINUTES: 5
