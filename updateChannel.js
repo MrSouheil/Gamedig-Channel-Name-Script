@@ -160,7 +160,6 @@ function buildEmbed({ last_update }) {
   return new EmbedBuilder()
     .setColor(0x00ffcc)
     .setTitle("🏆 Automix Leaderboard")
-    .setDescription("Top players (image)")
     .setFooter({ text: `Last update: ${last_update || "unknown"}` });
 }
 

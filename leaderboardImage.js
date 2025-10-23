@@ -152,9 +152,9 @@ export function renderLeaderboardImage({
 
     // Numeric columns (right-aligned)
     const cells = [
-      ["Pts", r.points],
-      ["K", r.kills],
-      ["D", r.deaths],
+      ["Points", r.points],
+      ["Kills", r.kills],
+      ["Deaths", r.deaths],
       ["KDR", Number.isFinite(r.kdr) ? r.kdr.toFixed(2) : "—"],
     ];
     cells.forEach(([key, val]) => {
@@ -163,19 +163,6 @@ export function renderLeaderboardImage({
       ctx.fillText(str, cols[key] - w, y + 22);
     });
   });
-
-  // Footer
-  ctx.fillStyle = PALETTE.muted;
-  ctx.font = `400 18px "DejaVu Sans"`;
-  const footerText = `Last update: ${
-    lastUpdate || "unknown"
-  } • Data source: automix.me`;
-  ctx.fillStyle = PALETTE.muted;
-  ctx.font = `400 16px "DejaVu Sans"`;
-  const fw = ctx.measureText(footerText).width;
-  const footerX = width - pad - 12 - fw;
-  const footerY = height - pad - 14;
-  ctx.fillText(footerText, footerX, footerY);
 
   return canvas.toBuffer("image/png");
 }
