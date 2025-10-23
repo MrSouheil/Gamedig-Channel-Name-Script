@@ -81,20 +81,20 @@ export function renderLeaderboardImage({
   const cols = {
     // Right-anchored numeric columns for stable layout
     KDR: width - pad - 30,
-    D: width - pad - 120,
-    K: width - pad - 210,
-    Pts: width - pad - 300,
+    Deaths: width - pad - 120,
+    Kills: width - pad - 210,
+    Points: width - pad - 300,
     Name: pad + 120,
     "#": pad + 40,
   };
 
   // Header text
-  const headers = ["#", "Name", "Pts", "K", "D", "KDR"];
+  const headers = ["#", "Name", "Points", "Kills", "Deaths", "KDR"];
   ctx.fillStyle = PALETTE.muted;
   ctx.font = `700 22px "DejaVu Sans"`;
   headers.forEach((h) => {
     const x = cols[h];
-    const alignRight = ["#", "Pts", "K", "D", "KDR"].includes(h);
+    const alignRight = ["#", "Points", "Kills", "Deaths", "KDR"].includes(h);
     const w = ctx.measureText(h).width;
     const tx = alignRight ? x - w : x;
     ctx.fillText(h, tx, hy1 + 38);
