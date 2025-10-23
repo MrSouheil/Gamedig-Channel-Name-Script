@@ -80,10 +80,11 @@ export function renderLeaderboardImage({
   // Columns (pixel anchors)
   const cols = {
     // Right-anchored numeric columns for stable layout
-    KDR: width - pad - 30,
-    Deaths: width - pad - 120,
-    Kills: width - pad - 210,
-    Points: width - pad - 300,
+    // moved anchors slightly left to add more spacing between numeric columns
+    KDR: width - pad - 40,
+    Deaths: width - pad - 140,
+    Kills: width - pad - 240,
+    Points: width - pad - 340,
     Name: pad + 120,
     "#": pad + 40,
   };
@@ -136,7 +137,7 @@ export function renderLeaderboardImage({
     ctx.fillText(rankTxt, cols["#"] - rankW, y + 22);
 
     // Name (truncate/fit if needed)
-    const maxNamePx = cols.Pts - cols.Name - 20;
+    const maxNamePx = cols.Points - cols.Name - 40;
     ctx.fillStyle = PALETTE.text;
     const { size: nameSize, text: nameFitted } = fitText(
       ctx,
