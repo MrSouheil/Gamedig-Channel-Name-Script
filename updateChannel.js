@@ -157,10 +157,7 @@ async function commitMessageIdIfPossible() {
 let leaderboardMessageId = loadMessageIdFromFile();
 
 function buildEmbed({ last_update }) {
-  return new EmbedBuilder()
-    .setColor(0x00ffcc)
-    .setTitle("🏆 Automix Leaderboard")
-    .setFooter({ text: `Last update: ${last_update || "unknown"}` });
+  return new EmbedBuilder().setColor(0xff0000).setTitle("🏆 Automix Rank");
 }
 
 async function updateLeaderboardMessage() {
@@ -183,8 +180,8 @@ async function updateLeaderboardMessage() {
 
   try {
     const png = renderLeaderboardImage({
-      title: "AUTOMIX Leaderboard",
-      rows: (data.rank || []).slice(0, 15),
+      title: "Top Players",
+      rows: (data.rank || []).slice(0, 10),
       lastUpdate: data.last_update,
     });
 

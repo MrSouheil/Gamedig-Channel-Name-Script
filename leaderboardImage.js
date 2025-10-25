@@ -80,23 +80,20 @@ export function renderLeaderboardImage({
   // Columns (pixel anchors)
   const cols = {
     // Right-anchored numeric columns for stable layout
-    // moved anchors slightly left to add more spacing between numeric columns
     KDR: width - pad - 80,
-    Deaths: width - pad - 180,
-    Kills: width - pad - 280,
-    Points: width - pad - 380,
+    Points: width - pad - 200,
     Name: pad + 120,
     "#": pad + 40,
   };
 
   // Header text
-  const headers = ["#", "Name", "Points", "Kills", "Deaths", "KDR"];
+  const headers = ["#", "Name", "Points", "KDR"];
   ctx.fillStyle = PALETTE.muted;
   ctx.font = `700 22px "DejaVu Sans"`;
   // Use textAlign for precise alignment (right-aligned numeric columns)
   headers.forEach((h) => {
     const x = cols[h];
-    const alignRight = ["#", "Points", "Kills", "Deaths", "KDR"].includes(h);
+    const alignRight = ["#", "Points", "KDR"].includes(h);
     ctx.textAlign = alignRight ? "right" : "left";
     ctx.fillText(h, x, hy1 + 38);
   });
@@ -157,8 +154,6 @@ export function renderLeaderboardImage({
     // Numeric columns (right-aligned)
     const cells = [
       ["Points", r.points],
-      ["Kills", r.kills],
-      ["Deaths", r.deaths],
       ["KDR", Number.isFinite(r.kdr) ? r.kdr.toFixed(2) : "—"],
     ];
     ctx.textAlign = "right";
