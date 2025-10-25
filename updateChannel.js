@@ -26,25 +26,25 @@ const LEADERBOARD_CHANNEL_ID = "1430989874269519993";
 const servers = [
   {
     name: "AUTOMIX #1",
-    host: "193.31.28.17",
+    host: "212.87.212.202",
     port: 27015,
     channelId: "1369430010297057463",
   },
   {
     name: "AUTOMIX #2",
-    host: "193.31.28.17",
+    host: "212.87.212.202",
     port: 27035,
     channelId: "1369430033525112954",
   },
   {
     name: "AUTOMIX #3",
-    host: "193.31.28.17",
+    host: "212.87.212.202",
     port: 27045,
     channelId: "1427802825823359026",
   },
   {
     name: "DEATHMATCH",
-    host: "193.31.28.17",
+    host: "212.87.212.202",
     port: 27025,
     channelId: "1369430067285065738",
   },
