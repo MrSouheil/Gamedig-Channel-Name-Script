@@ -43,6 +43,12 @@ const servers = [
     channelId: "1427802825823359026",
   },
   {
+    name: "AUTOMIX #NA",
+    host: "us.automix.me",
+    port: 27015,
+    channelId: "1465730696558674114",
+  },
+  {
     name: "DEATHMATCH",
     host: "212.87.212.202",
     port: 27025,
@@ -52,7 +58,12 @@ const servers = [
 
 async function fetchState({ host, port }) {
   try {
-    return await GameDig.query({ type: "csgo", host, port });
+    return await GameDig.query({
+      type: "csgo",
+      host,
+      port,
+      requestRules: true,
+    });
   } catch (err) {
     console.error(`[WARN] fetchState failed ${host}:${port}`, err);
     return null;
@@ -64,12 +75,14 @@ async function updateChannels() {
   await Promise.all(
     servers.map(async (server) => {
       const state = await fetchState(server);
+
+      console.log("Game Stateeeee: ", state);
       let players = "?";
       let max = "?";
 
       if (state) {
         const isSourceTVPresent = state.players.some(
-          (p) => (p.name || "").toLowerCase() === "maxfps tv"
+          (p) => (p.name || "").toLowerCase() === "maxfps tv",
         );
         players = state.players.length - (isSourceTVPresent ? 1 : 0);
         max = state.maxplayers;
@@ -83,7 +96,7 @@ async function updateChannels() {
         await channel.setName(newName);
         console.log(`Renamed ${server.name} to "${newName}"`);
       }
-    })
+    }),
   );
 }
 
@@ -188,7 +201,7 @@ async function updateLeaderboardMessage() {
     const fileName = "leaderboard.png";
     const attachment = new AttachmentBuilder(png, { name: fileName });
     const embed = buildEmbed({ last_update: data.last_update }).setImage(
-      `attachment://${fileName}`
+      `attachment://${fileName}`,
     );
 
     let message = null;
@@ -231,7 +244,7 @@ async function updateLeaderboardMessage() {
     }
   } catch (err) {
     console.log(
-      `[ERROR] Could not send/edit leaderboard image message: ${err.message}`
+      `[ERROR] Could not send/edit leaderboard image message: ${err.message}`,
     );
   }
 }
@@ -248,7 +261,7 @@ client.once("ready", async () => {
     setInterval(updateChannels, parseInt(INTERVAL_MINUTES, 10) * 60000);
     setInterval(
       updateLeaderboardMessage,
-      parseInt(LEADERBOARD_INTERVAL_MINUTES, 10) * 60000
+      parseInt(LEADERBOARD_INTERVAL_MINUTES, 10) * 60000,
     );
   }
 });
